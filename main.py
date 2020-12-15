@@ -1,3 +1,6 @@
+import numpy as np
+import pandas as pd
+
 from lib import InputFile
 from lib.core.calculate import (
   reflectance, 
@@ -10,25 +13,27 @@ from lib.core.calculate import (
 )
 
 d = 4.74e-3
-data = InputFile("./data/data_csv_ujicoba.csv")
+# data = InputFile("./data/data_csv_ujicoba.csv")
+data = InputFile("./data/11-4.74_preprocess.txt")
 
-R = reflectance(data._s11[0], data._s21[0])
-print(R)
+resultRL = []
+for idx, freq in enumerate(data.frequency):
+  s11 = data.s11[idx]
+  s21 = data.s21[idx]
+  
+  R = reflectance(s11, s21)
+  T = transmitance(s11, s21)
+  print(np.absolute(R), np.absolute(T), np.absolute(R) + np.absolute(T))
+  delta = delta_const(d, T)
+  mr = relative_permeability(R, delta)
+  er = relative_permitivity(mr, T, d)
+  Z = impedance(freq, d, mr, er)
+  RL = absorption(Z)
 
-T = transmitance(data._s11[0], data._s21[0])
-print(T)
+  resultRL.append(RL)
+resultRL = np.array(resultRL)
 
-delta = delta_const(d, T)
-print(delta)
+concat = np.vstack((data.frequency, resultRL)).T
 
-mr = relative_permeability(R, delta)
-print(mr)
-
-er = relative_permitivity(mr, T, d)
-print(er)
-
-Z = impedance(1.0e9, d, mr, er)
-print(Z)
-
-RL = absorption(Z)
-print(RL)
+resultDF = pd.DataFrame(data=concat, columns=["frequency", "reflection_loss"])
+resultDF.to_csv("./result/result2.csv", index=None)
