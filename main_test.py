@@ -20,7 +20,11 @@ resultR = []
 resultT = []
 resultDelta = []
 resultMR = []
+resultMR_r = []
+resultMR_i = []
 resultER = []
+resultER_r = []
+resultER_i = []
 resultZ = []
 resultRL = []
 for idx, freq in enumerate(data.frequency):
@@ -37,18 +41,32 @@ for idx, freq in enumerate(data.frequency):
 
   resultR.append(np.absolute(R))
   resultT.append(np.absolute(T))
+
   resultMR.append(np.absolute(mr))
+  resultMR_r.append(mr.real)
+  resultMR_i.append(mr.imag)
+
   resultER.append(np.absolute(er))
+  resultER_r.append(er.real)
+  resultER_i.append(er.imag)
+
   resultRL.append(RL)
 
-concat = np.vstack((data.frequency, resultR, resultT, resultMR, resultER, resultRL)).T
+concat = np.vstack((
+  data.frequency, 
+  resultR, 
+  resultT, 
+  resultMR, resultMR_r, resultMR_i,
+  resultER, resultER_r, resultER_i,
+  resultRL
+  )).T
 
 resultDF = pd.DataFrame(data=concat, columns=[
   "frequency", 
   "reflection_coeff",
   "transmission_coeff",
-  "permeability_rel",
-  "permitivity_rel",
+  "permeability_rel", "permeability_real", "permeability_imag",
+  "permitivity_rel", "permitivity_real", "permitivity_imag",
   "reflection_loss"
   ])
 resultDF.to_csv("./result/result.csv", index=None)
