@@ -1,6 +1,7 @@
 from flask.globals import request
 from flask_restful import Resource
 import numpy as np
+from decimal import Decimal
 
 from lib.core.calculate import absorption, impedance
 
@@ -38,6 +39,7 @@ class CalculateController(Resource):
       RL_data.append(RL)
 
     response = dict()
+    response["frequency"] = ['{:.2e}'.format(i) for i in freqs]
     if show_impedance:
       response["impedance"] = dict()
       response["impedance"]["real"] = Zreal_data
