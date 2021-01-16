@@ -48,7 +48,9 @@ class CalculateSimulationController(Resource):
         RL_data.append(RL)
 
       response = dict()
-      response["frequency"] = ['{:.2e}'.format(i) for i in freqs]
+      response["frequency"] = dict()
+      response["frequency"]["label"] = ['{:.2e}'.format(i) for i in freqs]
+      response["frequency"]["value"] = list(freqs)
       if show_impedance:
         response["impedance"] = dict()
         response["impedance"]["real"] = Zreal_data
@@ -67,12 +69,15 @@ class CalculateExperimentController(Resource):
     try:
       # reading formdata parameter
       key = request.headers.get("key")
-      thickness = np.float(request.form.get("thickness", 1))
+
+      body_json = request.get_json()
+      thickness = np.float(body_json["thickness"])
 
       # get dataframe
       data = InputFile.load_from_redis(key)
 
       # initialize result lists
+      resultFreqLabel = list()
       resultFreq = list()
       resultR_r = list()
       resultR_i = list()
@@ -91,7 +96,8 @@ class CalculateExperimentController(Resource):
         s11 = data.s11[idx]
         s21 = data.s21[idx]
 
-        resultFreq.append('{:.2e}'.format(freq))
+        resultFreq.append(freq)
+        resultFreqLabel.append('{:.2e}'.format(freq))
 
         R = reflectance(s11, s21)
         resultR_r.append(R.real)
@@ -119,7 +125,10 @@ class CalculateExperimentController(Resource):
         resultRL.append(RL)
 
       return {
-        "frequency": resultFreq,
+        "frequency": {
+          "label": resultFreqLabel,
+          "value": resultFreq,
+        },
         "reflectance": {
           "real": resultR_r,
           "imag": resultR_i,
