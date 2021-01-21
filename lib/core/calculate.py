@@ -25,7 +25,12 @@ def delta_const(d: np.float, transmitance: np.complex) -> np.complex:
   delta_square_inv = -((1.0 / (2*np.pi*d)) * np.log(1.0 / transmitance))**2
   return np.sqrt(1.0 / delta_square_inv)
 
-def relative_permeability(reflectance: np.complex, delta_coef: np.complex):
+def relative_permeability(
+    reflectance: np.complex, 
+    delta_coef: np.complex, 
+    lambda0: float = lambda0, 
+    lambdaC: float = lambdaC
+  ):
   """
   calculate relative permeability
   """
@@ -34,7 +39,13 @@ def relative_permeability(reflectance: np.complex, delta_coef: np.complex):
     (delta_coef * (1.0 - reflectance) * np.sqrt((1.0 / lambda0**2) - (1.0 / lambdaC**2)))
   )
 
-def relative_permitivity(relative_permeability: np.complex, transmitance: np.complex, d: np.float) -> np.complex:
+def relative_permitivity(
+    relative_permeability: np.complex, 
+    transmitance: np.complex, 
+    d: np.float, 
+    lambda0: float = lambda0, 
+    lambdaC: float = lambdaC
+  ) -> np.complex:
   """
   calculate relative permitivity
   """

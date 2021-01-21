@@ -13,6 +13,7 @@ class InputFile:
   def __init__(self, 
     filename: str = None,
     dataframe: pd.DataFrame = None,
+    experiment_mode: bool = True
   ):
     """
     initialization import file from filename
@@ -22,24 +23,36 @@ class InputFile:
     if dataframe is not None:
       self._data = dataframe
 
-    self._frequency = []
-    self._s11 = []
-    # self._s12 = []
-    self._s21 = []
-    # self._s22 = []
+    self.frequency = []
 
-    for _, row in self._data.iterrows():
-      self._frequency.append(row["frequency"])
-      self._s11.append(complex(row["s11r"], row["s11i"]))
-      # self._s12.append(complex(row["s12r"], row["s12i"]))
-      self._s21.append(complex(row["s21r"], row["s21i"]))
-      # self._s22.append(complex(row["s22r"], row["s22i"]))
+    # eksperiment mode
+    self.s11 = []
+    self.s21 = []
 
-    self.frequency = np.array(self._frequency)
-    self.s11 = np.array(self._s11)
-    # self.s12 = np.array(self._s12)
-    self.s21 = np.array(self._s21)
-    # self.s22 = np.array(self._s22)
+    # simulation mode
+    self.mr = []
+    self.er = []
+
+    if experiment_mode:
+      for _, row in self._data.iterrows():
+        self.frequency.append(row["frequency"])
+        self.s11.append(complex(row["s11r"], row["s11i"]))
+        self.s21.append(complex(row["s21r"], row["s21i"]))
+
+      self.frequency = np.array(self.frequency)
+      self.s11 = np.array(self.s11)
+      self.s21 = np.array(self.s21)
+      
+      
+    else:
+      for _, row in self._data.iterrows():
+        self.frequency.append(row["frequency"])
+        self.mr.append(row["mr_r"], row["mr_i"])
+        self.er.append(row["er_r"], row["er_i"])
+      
+      self.frequency = np.array(self.frequency)
+      self.mr = np.array(self.mr)
+      self.er = np.array(self.er)
 
   @property
   def dataframe(self) -> pd.DataFrame:
@@ -53,7 +66,7 @@ class InputFile:
     return key
 
   @classmethod
-  def load_from_redis(cls, key:str) -> "InputFile":
+  def load_from_redis(cls, key:str, experiment_mode:bool = True) -> "InputFile":
     if key is None:
       raise Exception("key is none", 400)
 
@@ -62,4 +75,4 @@ class InputFile:
       raise Exception("data not found", 404)
 
     rehydrate_df = pickle.loads(zlib.decompress(bytes))
-    return cls(dataframe = rehydrate_df)
+    return cls(dataframe = rehydrate_df, experiment_mode = experiment_mode)
