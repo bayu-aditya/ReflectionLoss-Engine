@@ -1,6 +1,7 @@
 from flask.globals import request
 from flask_restful import Resource
 import numpy as np
+from scipy.signal._savitzky_golay import savgol_filter
 
 from lib.core.error import CustomException
 from lib.data import InputFile
@@ -35,6 +36,9 @@ class CalculateSimulationController(Resource):
       show_impedance = req_json["option"]["show"]["impedance"]
       show_absorption = req_json["option"]["show"]["absorption"]
 
+      savgol_length = req_json["option"]["savgol_filter"]["window_length"]
+      savgol_polyorder = req_json["option"]["savgol_filter"]["polyorder"]
+
       Zreal_data = list()
       Zimag_data = list()
       RL_data = list()
@@ -54,9 +58,13 @@ class CalculateSimulationController(Resource):
       if show_impedance:
         response["impedance"] = dict()
         response["impedance"]["real"] = Zreal_data
+        response["impedance"]["real_filter"] = list(savgol_filter(Zreal_data, savgol_length, savgol_polyorder))
         response["impedance"]["imag"] = Zimag_data
+        response["impedance"]["imag_filter"] = list(savgol_filter(Zimag_data, savgol_length, savgol_polyorder))
       if show_absorption:
-        response["reflection_loss"] = RL_data
+        response["reflection_loss"] = dict()
+        response["reflection_loss"]["original"] = RL_data
+        response["reflection_loss"]["filter"] = list(savgol_filter(RL_data, savgol_length, savgol_polyorder))
       
       return response, 200
   
@@ -72,6 +80,8 @@ class CalculateExperimentController(Resource):
 
       body_json = request.get_json()
       thickness = np.float(body_json["thickness"])
+      savgol_length = body_json["option"]["savgol_filter"]["window_length"]
+      savgol_polyorder = body_json["option"]["savgol_filter"]["polyorder"]
 
       # get dataframe
       data = InputFile.load_from_redis(key)
@@ -131,25 +141,38 @@ class CalculateExperimentController(Resource):
         },
         "reflectance": {
           "real": resultR_r,
+          "real_filter": list(savgol_filter(resultR_r, savgol_length, savgol_polyorder)),
           "imag": resultR_i,
+          "imag_filter": list(savgol_filter(resultR_i, savgol_length, savgol_polyorder)),
         },
         "transmitance": {
           "real": resultT_r,
+          "real_filter": list(savgol_filter(resultT_r, savgol_length, savgol_polyorder)),
           "imag": resultT_i,
+          "imag_filter": list(savgol_filter(resultT_i, savgol_length, savgol_polyorder)),
         },
         "relative_permeability": {
           "real": resultMr_r,
+          "real_filter": list(savgol_filter(resultMr_r, savgol_length, savgol_polyorder)),
           "imag": resultMr_i,
+          "imag_filter": list(savgol_filter(resultMr_i, savgol_length, savgol_polyorder)),
         },
         "relative_permitivity": {
           "real": resultEr_r,
+          "real_filter": list(savgol_filter(resultEr_r, savgol_length, savgol_polyorder)),
           "imag": resultEr_i,
+          "imag_filter": list(savgol_filter(resultEr_i, savgol_length, savgol_polyorder)),
         },
         "impedance": {
           "real": resultZ_r,
+          "real_filter": list(savgol_filter(resultZ_r, savgol_length, savgol_polyorder)),
           "imag": resultZ_i,
+          "imag_filter": list(savgol_filter(resultZ_i, savgol_length, savgol_polyorder)),
         },
-        "reflection_loss": resultRL
+        "reflection_loss": {
+          "original": resultRL,
+          "filter": list(savgol_filter(resultRL, savgol_length, savgol_polyorder)),
+        }
       }
 
     except Exception as e:

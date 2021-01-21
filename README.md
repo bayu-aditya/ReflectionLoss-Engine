@@ -28,7 +28,11 @@
           "show": {
             "impedance": boolean,
             "absorption": boolean
-          }
+          },
+          "savgol_filter": {
+            "window_length": int,
+            "polyorder": int
+        }
         }
       }
       ```
@@ -42,9 +46,14 @@
       },
       "impedance": {
         "real": Array<float>,
-        "imag": Array<float>
+        "real_filter": Array<float>,
+        "imag": Array<float>,
+        "imag_filter": Array<float>
       },
-      "reflection_loss": Array<float>
+      "reflection_loss": {
+        "original": Array<float>,
+        "filter": Array<float>
+      }
     }
     ```
 
@@ -127,7 +136,13 @@
     - JSON
       ```
       {
-        thickness: float
+        thickness: float,
+        option: {
+        savgol_filter: {
+            window_length: int,
+            polyorder: 2
+        }
+    }
       }
       ```
   - Response
@@ -139,24 +154,37 @@
       },
       "reflectance": {
         "real": Array<float>,
+        "real_filter": Array<float>,
         "imag": Array<float>,
+        "imag_filter": Array<float>,
       },
       "transmitance": {
         "real": Array<float>,
+        "real_filter": Array<float>,
         "imag": Array<float>,
+        "imag_filter": Array<float>,
       },
       "relative_permeability": {
         "real": Array<float>,
+        "real_filter": Array<float>,
         "imag": Array<float>,
+        "imag_filter": Array<float>,
       },
       "relative_permitivity": {
         "real": Array<float>,
+        "real_filter": Array<float>,
         "imag": Array<float>,
+        "imag_filter": Array<float>,
       },
       "impedance": {
         "real": Array<float>,
+        "real_filter": Array<float>,
         "imag": Array<float>,
+        "imag_filter": Array<float>,
       },
-      "reflection_loss": Array<float>
+      "reflection_loss": {
+        "original": Array<float>,
+        "filter": Array<float>
+      }
     }
     ```
