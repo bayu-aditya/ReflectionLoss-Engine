@@ -47,8 +47,8 @@ class InputFile:
     else:
       for _, row in self._data.iterrows():
         self.frequency.append(row["frequency"])
-        self.mr.append(row["mr_r"], row["mr_i"])
-        self.er.append(row["er_r"], row["er_i"])
+        self.mr.append(complex(row["mr_r"], row["mr_i"]))
+        self.er.append(complex(row["er_r"], row["er_i"]))
       
       self.frequency = np.array(self.frequency)
       self.mr = np.array(self.mr)

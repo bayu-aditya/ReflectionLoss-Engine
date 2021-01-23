@@ -1,6 +1,7 @@
 from flask.globals import request
 from flask_restful import Resource
 import numpy as np
+import pandas as pd
 from scipy.signal._savitzky_golay import savgol_filter
 
 from lib.core.error import CustomException
@@ -68,6 +69,58 @@ class CalculateSimulationController(Resource):
       
       return response, 200
   
+    except Exception as e:
+      return CustomException(e)
+
+
+class CalculateSimulationWithDataController(Resource):
+  def post(self):
+    try:
+      key = request.headers.get("key")
+      req_json: dict = request.get_json()
+
+      data = InputFile.load_from_redis(key, experiment_mode=False)
+
+      d = req_json["absorber_thickness"]
+
+      show_impedance = req_json["option"]["show"]["impedance"]
+      show_absorption = req_json["option"]["show"]["absorption"]
+
+      savgol_length = req_json["option"]["savgol_filter"]["window_length"]
+      savgol_polyorder = req_json["option"]["savgol_filter"]["polyorder"]
+
+      Zreal_data = list()
+      Zimag_data = list()
+      RL_data = list()
+
+      for (idx, freq) in enumerate(data.frequency):
+        mr = data.mr[idx]
+        er = data.mr[idx]
+
+        Z = impedance(freq, d, mr, er)
+        Zreal_data.append(Z.real)
+        Zimag_data.append(Z.imag)
+
+        RL = absorption(Z)
+        RL_data.append(RL)
+
+      response = dict()
+      response["frequency"] = dict()
+      response["frequency"]["label"] = ['{:.2e}'.format(i) for i in data.frequency]
+      response["frequency"]["value"] = list(data.frequency)
+      if show_impedance:
+        response["impedance"] = dict()
+        response["impedance"]["real"] = Zreal_data
+        response["impedance"]["real_filter"] = list(savgol_filter(Zreal_data, savgol_length, savgol_polyorder))
+        response["impedance"]["imag"] = Zimag_data
+        response["impedance"]["imag_filter"] = list(savgol_filter(Zimag_data, savgol_length, savgol_polyorder))
+      if show_absorption:
+        response["reflection_loss"] = dict()
+        response["reflection_loss"]["original"] = RL_data
+        response["reflection_loss"]["filter"] = list(savgol_filter(RL_data, savgol_length, savgol_polyorder))
+
+      return response, 200
+
     except Exception as e:
       return CustomException(e)
 

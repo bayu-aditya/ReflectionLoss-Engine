@@ -12,7 +12,7 @@ class ImportData(Resource):
 
       data = InputFile.load_from_redis(key)
       return {
-        "message": "halo",
+        "message": "OK, experiment data",
         "data": data.dataframe.to_dict()
       }
 
@@ -30,6 +30,37 @@ class ImportData(Resource):
       return {
         "message": "OK",
         "key": key,
+      }
+
+    except Exception as e:
+      return CustomException(e)
+
+
+class ImportDataSimulation(Resource):
+  def get(self):
+    try:
+      key = request.headers.get("key")
+
+      data = InputFile.load_from_redis(key, experiment_mode=False)
+      return {
+        "message": "OK, simulation data", 
+        "data": data.dataframe.to_dict()
+      }
+
+    except Exception as e:
+      return CustomException(e)
+
+  def post(self):
+    try:
+      file = request.files.get("data")
+
+      df = pd.read_csv(file)
+      data = InputFile(dataframe = df, experiment_mode = False)
+
+      key = data.save_to_redis()
+      return {
+        "message": "OK",
+        "key": key
       }
 
     except Exception as e:
