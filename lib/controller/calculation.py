@@ -1,4 +1,5 @@
 from flask.globals import request
+from flask.helpers import make_response
 from flask_restful import Resource
 import numpy as np
 import pandas as pd
@@ -18,6 +19,7 @@ from lib.core.calculate import (
 class CalculateSimulationController(Resource):
   def post(self):
     try:
+      download_result: str = request.headers.get("download_result")
       req_json: dict = request.get_json()
 
       freq_start = req_json["frequency"]["start"]
@@ -66,6 +68,28 @@ class CalculateSimulationController(Resource):
         response["reflection_loss"] = dict()
         response["reflection_loss"]["original"] = RL_data
         response["reflection_loss"]["filter"] = list(savgol_filter(RL_data, savgol_length, savgol_polyorder))
+
+      # create dataframe for calculation result and download it
+      if download_result == "true":
+        df = pd.DataFrame(
+          list(zip(
+            freqs,
+            Zreal_data, 
+            Zimag_data,
+            RL_data,
+          )),
+          columns=[
+            "Frequency (Hz)",
+            "Impedance Real", 
+            "Impedance Imag",
+            "Reflection Loss (dB)",
+          ]
+        )
+
+        resp = make_response(df.to_csv(index=None))
+        resp.headers["Content-Disposition"] = "attachment; filename=simulation_result.csv"
+        resp.headers["Content-Type"] = "text/csv"
+        return resp
       
       return response, 200
   
@@ -76,6 +100,7 @@ class CalculateSimulationController(Resource):
 class CalculateSimulationWithDataController(Resource):
   def post(self):
     try:
+      download_result: str = request.headers.get("download_result")
       key = request.headers.get("key")
       req_json: dict = request.get_json()
 
@@ -119,6 +144,28 @@ class CalculateSimulationWithDataController(Resource):
         response["reflection_loss"]["original"] = RL_data
         response["reflection_loss"]["filter"] = list(savgol_filter(RL_data, savgol_length, savgol_polyorder))
 
+      # create dataframe for calculation result and download it
+      if download_result == "true":
+        df = pd.DataFrame(
+          list(zip(
+            data.frequency,
+            Zreal_data, 
+            Zimag_data,
+            RL_data,
+          )),
+          columns=[
+            "Frequency (Hz)",
+            "Impedance Real", 
+            "Impedance Imag",
+            "Reflection Loss (dB)",
+          ]
+        )
+
+        resp = make_response(df.to_csv(index=None))
+        resp.headers["Content-Disposition"] = "attachment; filename=simulation_with_input_parameter_result.csv"
+        resp.headers["Content-Type"] = "text/csv"
+        return resp
+
       return response, 200
 
     except Exception as e:
@@ -129,10 +176,13 @@ class CalculateExperimentController(Resource):
   def post(self):
     try:
       # reading formdata parameter
+      download_result: str = request.headers.get("download_result")
       key = request.headers.get("key")
 
       body_json = request.get_json()
       thickness = np.float(body_json["thickness"])
+      lambda_0 = np.float(body_json["lambda_0"])
+      lambda_C = np.float(body_json["lambda_C"])
       savgol_length = body_json["option"]["savgol_filter"]["window_length"]
       savgol_polyorder = body_json["option"]["savgol_filter"]["polyorder"]
 
@@ -172,11 +222,11 @@ class CalculateExperimentController(Resource):
 
         delta = delta_const(thickness, T)
 
-        mr = relative_permeability(R, delta)
+        mr = relative_permeability(R, delta, lambda_0, lambda_C)
         resultMr_r.append(mr.real)
         resultMr_i.append(mr.imag)
         
-        er = relative_permitivity(mr, T, thickness)
+        er = relative_permitivity(mr, T, thickness, lambda_0, lambda_C)
         resultEr_r.append(er.real)
         resultEr_i.append(er.imag)
 
@@ -186,6 +236,44 @@ class CalculateExperimentController(Resource):
         
         RL = absorption(Z)
         resultRL.append(RL)
+
+      # create dataframe for calculation result and download it
+      if download_result == "true":
+        df = pd.DataFrame(
+          list(zip(
+            data.frequency,
+            resultR_r,
+            resultR_i,
+            resultT_r,
+            resultT_i, 
+            resultMr_r,
+            resultMr_i,
+            resultEr_r,
+            resultEr_i,
+            resultZ_r,
+            resultZ_i,
+            resultRL,
+          )),
+          columns=[
+            "Frequency (Hz)",
+            "Reflectance Real", 
+            "Reflectance Imag",
+            "Transmitance Real", 
+            "Transmitance Imag",
+            "Permeability Real",
+            "Permeability Imag",
+            "Permitivity Real",
+            "Permitivity Imag",
+            "Impedance Real",
+            "Impedance Imag",
+            "Reflection Loss (dB)",
+          ]
+        )
+
+        resp = make_response(df.to_csv(index=None))
+        resp.headers["Content-Disposition"] = "attachment; filename=experiment_result.csv"
+        resp.headers["Content-Type"] = "text/csv"
+        return resp
 
       return {
         "frequency": {

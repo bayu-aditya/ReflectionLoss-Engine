@@ -43,7 +43,7 @@ class DownloadExperimentData(Resource):
 
       data = InputFile.load_from_redis(key)
 
-      resp = make_response(data.dataframe.to_csv())
+      resp = make_response(data.dataframe.to_csv(index=None))
       resp.headers["Content-Disposition"] = "attachment; filename=experiment_dataset.csv"
       resp.headers["Content-Type"] = "text/csv"
       return resp
@@ -90,7 +90,7 @@ class DownloadSimulationParameterData(Resource):
 
       data = InputFile.load_from_redis(key, experiment_mode = False)
 
-      resp = make_response(data.dataframe.to_csv())
+      resp = make_response(data.dataframe.to_csv(index=None))
       resp.headers["Content-Disposition"] = "attachment; filename=simulation_parameter.csv"
       resp.headers["Content-Type"] = "text/csv"
       return resp
