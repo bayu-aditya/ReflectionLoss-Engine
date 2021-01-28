@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, make_response
 from flask_restful import Resource
 import pandas as pd
 
@@ -36,6 +36,22 @@ class ImportData(Resource):
       return CustomException(e)
 
 
+class DownloadExperimentData(Resource):
+  def get(self):
+    try:
+      key = request.headers.get("key")
+
+      data = InputFile.load_from_redis(key)
+
+      resp = make_response(data.dataframe.to_csv())
+      resp.headers["Content-Disposition"] = "attachment; filename=experiment_dataset.csv"
+      resp.headers["Content-Type"] = "text/csv"
+      return resp
+
+    except Exception as e:
+      return CustomException(e)
+
+
 class ImportDataSimulation(Resource):
   def get(self):
     try:
@@ -62,6 +78,22 @@ class ImportDataSimulation(Resource):
         "message": "OK",
         "key": key
       }
+
+    except Exception as e:
+      return CustomException(e)
+
+
+class DownloadSimulationParameterData(Resource):
+  def get(self):
+    try:
+      key = request.headers.get("key")
+
+      data = InputFile.load_from_redis(key, experiment_mode = False)
+
+      resp = make_response(data.dataframe.to_csv())
+      resp.headers["Content-Disposition"] = "attachment; filename=simulation_parameter.csv"
+      resp.headers["Content-Type"] = "text/csv"
+      return resp
 
     except Exception as e:
       return CustomException(e)
