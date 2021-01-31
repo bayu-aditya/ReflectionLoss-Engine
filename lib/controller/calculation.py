@@ -87,6 +87,7 @@ class CalculateSimulationController(Resource):
         )
 
         resp = make_response(df.to_csv(index=None))
+        resp.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
         resp.headers["Content-Disposition"] = "attachment; filename=simulation_result.csv"
         resp.headers["Content-Type"] = "text/csv"
         return resp
@@ -162,6 +163,7 @@ class CalculateSimulationWithDataController(Resource):
         )
 
         resp = make_response(df.to_csv(index=None))
+        resp.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
         resp.headers["Content-Disposition"] = "attachment; filename=simulation_with_input_parameter_result.csv"
         resp.headers["Content-Type"] = "text/csv"
         return resp
@@ -271,6 +273,7 @@ class CalculateExperimentController(Resource):
         )
 
         resp = make_response(df.to_csv(index=None))
+        resp.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
         resp.headers["Content-Disposition"] = "attachment; filename=experiment_result.csv"
         resp.headers["Content-Type"] = "text/csv"
         return resp
