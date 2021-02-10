@@ -36,7 +36,7 @@ def relative_permeability(
   """
   return (
     (1.0 + reflectance) /
-    (delta_coef * (1.0 - reflectance) * np.sqrt((1.0 / lambda0**2) - (1.0 / lambdaC**2)))
+    (delta_coef * (1.0 - reflectance) * np.sqrt(complex((1.0 / lambda0**2) - (1.0 / lambdaC**2))))
   )
 
 def relative_permitivity(
