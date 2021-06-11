@@ -69,4 +69,4 @@ def absorption(impedance: np.complex) -> np.float:
   """
   calculate absorption
   """
-  return -20.0 * np.log10((np.absolute(impedance) - 1.0) / (np.absolute(impedance) + 1.0))
+  return 20.0 * np.log10(np.absolute((np.absolute(impedance) - 1.0) / (np.absolute(impedance) + 1.0)))
