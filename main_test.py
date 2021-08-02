@@ -34,7 +34,7 @@ for idx, freq in enumerate(data.frequency):
   R = reflectance(s11, s21)
   T = transmitance(s11, s21)
   delta = delta_const(d, T)
-  mr = relative_permeability(R, delta)
+  mr = relative_permeability(R, delta, freq)
   er = relative_permitivity(mr, T, d)
   Z = impedance(freq, d, mr, er)
   RL = absorption(Z)

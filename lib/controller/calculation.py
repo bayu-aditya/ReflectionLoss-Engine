@@ -224,7 +224,8 @@ class CalculateExperimentController(Resource):
 
         delta = delta_const(thickness, T)
 
-        mr = relative_permeability(R, delta, lambda_0, lambda_C)
+        # mr = relative_permeability(R, delta, lambda_0, lambda_C)
+        mr = relative_permeability(R, delta, freq, lambda_C)
         resultMr_r.append(mr.real)
         resultMr_i.append(mr.imag)
         

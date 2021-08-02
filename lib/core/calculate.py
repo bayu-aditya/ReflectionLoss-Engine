@@ -9,7 +9,8 @@ def reflectance(s11: np.complex, s21: np.complex) -> np.complex:
   calculate reflectance coefficient from S constant
   """
   X = (s11**2 - s21**2 + 1) / (2 * s11)
-  return X + np.sqrt(X**2 - 1)
+  # return X + np.sqrt(X**2 - 1)
+  return X - np.sqrt(X**2 - 1)
 
 def transmitance(s11: np.complex, s21: np.complex) -> np.complex:
   """
@@ -28,12 +29,15 @@ def delta_const(d: np.float, transmitance: np.complex) -> np.complex:
 def relative_permeability(
     reflectance: np.complex, 
     delta_coef: np.complex, 
-    lambda0: float = lambda0, 
+    # lambda0: float = lambda0, 
+    frequency: float,
     lambdaC: float = lambdaC
   ):
   """
   calculate relative permeability
   """
+  lambda0 = c / frequency
+
   return (
     (1.0 + reflectance) /
     (delta_coef * (1.0 - reflectance) * np.sqrt(complex((1.0 / lambda0**2) - (1.0 / lambdaC**2))))
