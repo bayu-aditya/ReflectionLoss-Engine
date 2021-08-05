@@ -9,8 +9,11 @@ def reflectance(s11: np.complex, s21: np.complex) -> np.complex:
   calculate reflectance coefficient from S constant
   """
   X = (s11**2 - s21**2 + 1) / (2 * s11)
-  # return X + np.sqrt(X**2 - 1)
-  return X - np.sqrt(X**2 - 1)
+
+  R = X + np.sqrt(X**2 - 1)
+  if np.absolute(R) > 1:
+    return X - np.sqrt(X**2 - 1)
+  return R
 
 def transmitance(s11: np.complex, s21: np.complex) -> np.complex:
   """
@@ -69,8 +72,17 @@ def impedance(frequency: np.float, d: np.float, relative_permeability: np.comple
     )
   )
 
-def absorption(impedance: np.complex) -> np.float:
+def absorptionV1(impedance: np.complex) -> np.float:
   """
   calculate absorption
   """
   return 20.0 * np.log10(np.absolute((np.absolute(impedance) - 1.0) / (np.absolute(impedance) + 1.0)))
+
+def absorption(impedance: np.complex, reflectance: np.complex) -> np.float:
+  """
+  calculate absorption
+  """
+  # return 20.0 * np.log10(np.absolute((np.absolute(impedance) - 1.0) / (np.absolute(impedance) + 1.0)))
+  return 20.0 * np.log10(np.absolute(reflectance))
+
+

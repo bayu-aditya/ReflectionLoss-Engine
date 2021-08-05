@@ -37,7 +37,7 @@ for idx, freq in enumerate(data.frequency):
   mr = relative_permeability(R, delta, freq)
   er = relative_permitivity(mr, T, d)
   Z = impedance(freq, d, mr, er)
-  RL = absorption(Z)
+  RL = absorption(Z, R)
 
   resultR.append(np.absolute(R))
   resultT.append(np.absolute(T))

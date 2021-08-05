@@ -8,7 +8,8 @@ from scipy.signal._savitzky_golay import savgol_filter
 from lib.core.error import CustomException
 from lib.data import InputFile
 from lib.core.calculate import (
-  absorption, delta_const, 
+  absorption, absorptionV1,
+  delta_const, 
   impedance, 
   reflectance, 
   relative_permeability,
@@ -51,7 +52,7 @@ class CalculateSimulationController(Resource):
         Zreal_data.append(Z.real)
         Zimag_data.append(Z.imag)
 
-        RL = absorption(Z)
+        RL = absorptionV1(Z)
         RL_data.append(RL)
 
       response = dict()
@@ -127,7 +128,7 @@ class CalculateSimulationWithDataController(Resource):
         Zreal_data.append(Z.real)
         Zimag_data.append(Z.imag)
 
-        RL = absorption(Z)
+        RL = absorptionV1(Z)
         RL_data.append(RL)
 
       response = dict()
@@ -237,7 +238,7 @@ class CalculateExperimentController(Resource):
         resultZ_r.append(Z.real)
         resultZ_i.append(Z.imag)
         
-        RL = absorption(Z)
+        RL = absorption(Z, R)
         resultRL.append(RL)
 
       # create dataframe for calculation result and download it
